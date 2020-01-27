@@ -1,0 +1,104 @@
+################################################################################
+#
+# RevBayes Example: Bayesian inference of phylogeny using a Jukes-Cantor
+#            substitution model on a single gene.
+#
+# authors: Sebastian Hoehna, Michael Landis, and Tracy A. Heath
+#
+# Adapted for Porto 2020 by Ben Bettisworth
+#
+################################################################################
+
+# WHEN YOU SAY NATURAL NUMBER, MAYBE YOU SHOULD ACTUALLY ACCEPT NATURAL
+# NUMBERS!
+# seed(11597695771248234840)
+# seed(1975531870)
+seed(107047827)
+printSeed()
+
+### Read in sequence data for both genes
+data = readDiscreteCharacterData("../data/027.nex")
+
+# Get some useful variables from the data. We need these later on.
+num_taxa <- data.ntaxa()
+num_branches <- 2 * num_taxa - 3
+taxa <- data.taxa()
+
+moves    = VectorMoves()
+monitors = VectorMonitors()
+
+
+######################
+# Substitution Model #
+######################
+
+# create a constant variable for the rate matrix
+freqs_prior_params <- v(1,1,1,1)
+rates_prior_params <- v(1,1,1,1,1,1)
+freqs_prior ~ dnDirichlet(freqs_prior_params)
+rates_prior ~ dnDirichlet(rates_prior_params)
+Q <- fnGTR(rates_prior, freqs_prior)
+
+
+##############
+# Tree model #
+##############
+
+# Prior distribution on the tree topology
+topology ~ dnUniformTopology(taxa)
+moves.append( mvNNI(topology, weight=num_taxa/2.0) )
+moves.append( mvSPR(topology, weight=num_taxa/10.0) )
+
+# Branch length prior
+for (i in 1:num_branches) {
+    bl[i] ~ dnExponential(10.0)
+    moves.append( mvScale(bl[i]) )
+}
+
+TL := sum(bl)
+
+psi := treeAssembly(topology, bl)
+
+
+
+###################
+# PhyloCTMC Model #
+###################
+
+# the sequence evolution model
+seq ~ dnPhyloCTMC(tree=psi, Q=Q, type="DNA")
+
+# attach the data
+seq.clamp(data)
+
+
+############
+# Analysis #
+############
+
+mymodel = model(psi)
+
+# add monitors
+monitors.append( mnScreen(TL, printgen=100) )
+monitors.append( mnFile(psi, filename="output/027.trees", printgen=10) )
+monitors.append( mnModel(filename="output/027_gtr.log", printgen=10) )
+
+# run the analysis
+mymcmc = mcmc(mymodel, moves, monitors)
+mymcmc.run(generations=10000)
+
+
+###################
+# Post processing #
+###################
+
+# Now, we will analyze the tree output.
+# Let us start by reading in the tree trace
+treetrace = readTreeTrace("output/027.trees", treetype="non-clock")
+# and then get the MAP tree
+map_tree = mapTree(treetrace,"output/027_map.tree")
+
+
+# you may want to quit RevBayes now
+q()
+

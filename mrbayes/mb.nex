@@ -1,0 +1,12 @@
+begin mrbayes;
+execute ../data/027.nex;
+lset nst=6 rates=invgamma;
+set seed=1024725995;
+set swapseed=1628522558;
+mcmc ngen=20000 samplefreq=100 printfreq=1000 diagnfreq=10000 file=output_seed2.nex;
+sumt burnin=1000;
+set seed=48781736;
+set swapseed=495528886;
+mcmc ngen=20000 samplefreq=100 printfreq=1000 diagnfreq=10000 file=output_seed2.nex;
+sumt burnin=1000;
+end;
