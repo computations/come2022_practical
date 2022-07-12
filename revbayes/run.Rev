@@ -5,14 +5,10 @@
 #
 # authors: Sebastian Hoehna, Michael Landis, and Tracy A. Heath
 #
-# Adapted for Porto 2020 by Ben Bettisworth
+# Adapted for COME 2022 by Ben Bettisworth
 #
 ################################################################################
 
-# WHEN YOU SAY NATURAL NUMBER, MAYBE YOU SHOULD ACTUALLY ACCEPT NATURAL
-# NUMBERS!
-# seed(11597695771248234840)
-# seed(1975531870)
 seed(107047827)
 printSeed()
 
