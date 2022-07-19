@@ -31,9 +31,12 @@ monitors = VectorMonitors()
 # create a constant variable for the rate matrix
 freqs_prior_params <- v(1,1,1,1)
 rates_prior_params <- v(1,1,1,1,1,1)
-freqs_prior ~ dnDirichlet(freqs_prior_params)
-rates_prior ~ dnDirichlet(rates_prior_params)
-Q <- fnGTR(rates_prior, freqs_prior)
+freqs_params ~ dnDirichlet(freqs_prior_params)
+exchange_rate_params ~ dnDirichlet(rates_prior_params)
+Q <- fnGTR(exchange_rate_params, freqs_param)
+
+moves.append( mvBetaSimplex(freqs_params, weight=3, alpha=10))
+moves.append( mvBetaSimplex(exchange_rate_params, weight=2, alpha=10))
 
 
 ##############
